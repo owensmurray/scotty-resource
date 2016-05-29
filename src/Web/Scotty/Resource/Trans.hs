@@ -165,6 +165,11 @@ resource uri (W methods ()) = matchAny uri $
   create one of these. Use the `Monad` or `Monoid` instances to compose them.
 -}
 data WebResource e m a = W [(Method, ActionT e m ())] a
+instance Functor (WebResource e m) where
+  fmap f (W m a) = W m (f a)
+instance Applicative (WebResource e m) where
+  pure = W []
+  W l f <*> W r a = W (l <> r) (f a)
 instance Monad (WebResource e m) where
   return = W []
   W methods a >>= f =
