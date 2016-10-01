@@ -118,7 +118,7 @@ module Web.Scotty.Resource.Trans (
 
 import Prelude hiding (head)
 
-import Control.Monad (liftM)
+import Control.Monad (liftM, ap)
 import Control.Monad.IO.Class (MonadIO)
 import Data.List (intersperse)
 import Data.Maybe (fromMaybe)
@@ -166,10 +166,10 @@ resource uri (W methods ()) = matchAny uri $
 -}
 data WebResource e m a = W [(Method, ActionT e m ())] a
 instance Functor (WebResource e m) where
-  fmap f (W m a) = W m (f a)
+  fmap = liftM
 instance Applicative (WebResource e m) where
-  pure = W []
-  W l f <*> W r a = W (l <> r) (f a)
+  pure = return
+  (<*>) = ap
 instance Monad (WebResource e m) where
   return = W []
   W methods a >>= f =
