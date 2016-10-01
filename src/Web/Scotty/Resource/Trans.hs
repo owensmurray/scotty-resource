@@ -122,7 +122,7 @@ import Control.Monad (liftM, ap)
 import Control.Monad.IO.Class (MonadIO)
 import Data.List (intersperse)
 import Data.Maybe (fromMaybe)
-import Data.Monoid (mconcat, (<>), mempty, Monoid, mappend)
+import Data.Monoid ((<>))
 import Data.Set (fromList, toList)
 import Data.Text.Encoding (decodeUtf8)
 import Data.Text.Lazy (fromStrict)
@@ -247,7 +247,7 @@ method m action = W [(m, action)] ()
 {- |
   A helper function that removes duplicates from a list.
 -}
-dedupe :: (Ord a, Eq a) => [a] -> [a]
+dedupe :: (Ord a) => [a] -> [a]
 dedupe = toList . fromList
 
 
