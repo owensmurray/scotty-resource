@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                scotty-resource
-version:             0.2.0.1
+version:             0.2.0.2
 synopsis:            A Better way of modeling web resources.
 description:         
                      Allows users of the Scotty web framework to model
