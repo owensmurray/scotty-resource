@@ -56,8 +56,8 @@
   Each resource is described by a `WebResource` value, which happens to
   be a `Monad`. The only reason `WebResource` implements `Monad` to fit
   in with the do-notation coding style of `ScottyT`. This is an abuse of
-  `Monad`, but, you know, whatever. The `Monoid` typeclass more correctly
-  represents what a `WebResource` really is. The `Monad` and `Monoid`
+  `Monad`, but, you know, whatever. The `Semigroup` typeclass more correctly
+  represents what a `WebResource` really is. The `Monad` and `Semigroup`
   typeclasses are used to compose instances of `WebResource`.
 
   Here is another more complex example, with multiple resources.
@@ -122,7 +122,6 @@ import Control.Monad (liftM, ap)
 import Control.Monad.IO.Class (MonadIO)
 import Data.List (intersperse)
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
 import Data.Set (fromList, toList)
 import Data.Text.Encoding (decodeUtf8)
 import Data.Text.Lazy (fromStrict)
@@ -162,7 +161,7 @@ resource uri (W methods ()) = matchAny uri $
 
 {- |
   An opaque representation of an http resource. Use `get`, `post`, etc. to
-  create one of these. Use the `Monad` or `Monoid` instances to compose them.
+  create one of these. Use the `Monad` or `Semigroup` instances to compose them.
 -}
 data WebResource e m a = W [(Method, ActionT e m ())] a
 instance Functor (WebResource e m) where
@@ -175,9 +174,8 @@ instance Monad (WebResource e m) where
   W methods a >>= f =
     let W newMethods b = f a
     in W (methods <> newMethods) b
-instance Monoid (WebResource e m a) where
-  mempty = W mempty undefined
-  mappend (W a _) (W b _) = W (a <> b) undefined
+instance Semigroup (WebResource e m a) where
+  W a _ <> W b c = W (a <> b) c
 
 
 {- |
