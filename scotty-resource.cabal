@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                scotty-resource
-version:             0.2.0.2
+version:             0.3.0.0
 synopsis:            A Better way of modeling web resources.
 description:         
                      Allows users of the Scotty web framework to model
@@ -25,7 +25,7 @@ library
   other-extensions:    
     OverloadedStrings
   build-depends:
-    base         >= 4.8      && < 4.11,
+    base         >= 4.11     && < 4.12,
     containers   >= 0.1.0.0  && < 0.6,
     http-types   >= 0.8.2    && < 0.13,
     scotty       >= 0.10     && < 0.12,
