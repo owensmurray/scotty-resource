@@ -1,0 +1,7 @@
+packages:
+  "."
+package scotty-resource
+  ghc-options:
+    -Werror
+    -Wwarn=noncanonical-monad-instances
+
