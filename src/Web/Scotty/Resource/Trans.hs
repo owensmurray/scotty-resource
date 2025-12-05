@@ -119,7 +119,6 @@ module Web.Scotty.Resource.Trans (
 import Prelude hiding (head)
 
 import Control.Monad (liftM, ap)
-import Control.Monad.IO.Class (MonadIO)
 import Data.List (intersperse)
 import Data.Maybe (fromMaybe)
 import Data.Set (fromList, toList)
@@ -128,15 +127,16 @@ import Data.Text.Lazy (fromStrict)
 import Network.HTTP.Types (Method, methodNotAllowed405)
 import Network.Wai (requestMethod)
 import Web.Scotty.Trans (ActionT, RoutePattern, ScottyT, matchAny,
-  request, ScottyError, setHeader, status)
+  request, setHeader, status)
+import UnliftIO (MonadUnliftIO)
 
 {- |
   Add a resource whose uri matches the route pattern.
 -}
-resource :: (MonadIO m, ScottyError e)
+resource :: (MonadUnliftIO m)
   => RoutePattern
-  -> WebResource e m ()
-  -> ScottyT e m ()
+  -> WebResource m ()
+  -> ScottyT m ()
 resource uri (W methods ()) = matchAny uri $
     getMethod `liftM` request >>= fromMaybe notAllowed
   where
@@ -163,18 +163,18 @@ resource uri (W methods ()) = matchAny uri $
   An opaque representation of an http resource. Use `get`, `post`, etc. to
   create one of these. Use the `Monad` or `Semigroup` instances to compose them.
 -}
-data WebResource e m a = W [(Method, ActionT e m ())] a
-instance Functor (WebResource e m) where
+data WebResource m a = W [(Method, ActionT m ())] a
+instance Functor (WebResource m) where
   fmap = liftM
-instance Applicative (WebResource e m) where
-  pure = return
+instance Applicative (WebResource m) where
+  pure = W []
   (<*>) = ap
-instance Monad (WebResource e m) where
-  return = W []
+instance Monad (WebResource m) where
+  return = pure
   W methods a >>= f =
     let W newMethods b = f a
     in W (methods <> newMethods) b
-instance Semigroup (WebResource e m a) where
+instance Semigroup (WebResource m a) where
   W a _ <> W b c = W (a <> b) c
 
 
@@ -182,7 +182,7 @@ instance Semigroup (WebResource e m a) where
   Create a `WebResource` that handles OPTIONS requests using the given
   scotty action.
 -}
-options :: ActionT e m () -> WebResource e m ()
+options :: ActionT m () -> WebResource m ()
 options action = W [("OPTIONS", action)] ()
 
 
@@ -190,7 +190,7 @@ options action = W [("OPTIONS", action)] ()
   Create a `WebResource` that handles GET requests using the given
   scotty action.
 -}
-get :: ActionT e m () -> WebResource e m ()
+get :: ActionT m () -> WebResource m ()
 get action = W [("GET", action)] ()
 
 
@@ -198,7 +198,7 @@ get action = W [("GET", action)] ()
   Create a `WebResource` that handles HEAD requests using the given
   scotty action.
 -}
-head :: ActionT e m () -> WebResource e m ()
+head :: ActionT m () -> WebResource m ()
 head action = W [("HEAD", action)] ()
 
 
@@ -206,7 +206,7 @@ head action = W [("HEAD", action)] ()
   Create a `WebResource` that handles POST requests using the given
   scotty action.
 -}
-post :: ActionT e m () -> WebResource e m ()
+post :: ActionT m () -> WebResource m ()
 post action = W [("POST", action)] ()
 
 
@@ -214,7 +214,7 @@ post action = W [("POST", action)] ()
   Create a `WebResource` that handles PUT requests using the given
   scotty action.
 -}
-put :: ActionT e m () -> WebResource e m ()
+put :: ActionT m () -> WebResource m ()
 put action = W [("PUT", action)] ()
 
 
@@ -222,7 +222,7 @@ put action = W [("PUT", action)] ()
   Create a `WebResource` that handles DELETE requests using the given
   scotty action.
 -}
-delete :: ActionT e m () -> WebResource e m ()
+delete :: ActionT m () -> WebResource m ()
 delete action = W [("DELETE", action)] ()
 
 
@@ -230,7 +230,7 @@ delete action = W [("DELETE", action)] ()
   Create a `WebResource` that handles PATCH requests using the given
   scotty action.
 -}
-patch :: ActionT e m () -> WebResource e m ()
+patch :: ActionT m () -> WebResource m ()
 patch action = W [("PATCH", action)] ()
 
 
@@ -238,7 +238,7 @@ patch action = W [("PATCH", action)] ()
   Create a `WebResource` that handles the specific method using the given
   scotty action.
 -}
-method :: Method -> ActionT e m () -> WebResource e m ()
+method :: Method -> ActionT m () -> WebResource m ()
 method m action = W [(m, action)] ()
 
 
